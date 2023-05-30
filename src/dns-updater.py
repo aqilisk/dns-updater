@@ -46,10 +46,10 @@ def update_dns_records(domain, subdomains, current_ip):
 
 def main():
   # DigitalOcean TOKEN
-  TOKEN = "TOKEN"
+  TOKEN = "DigitalOcean Token"
 
   # Get domain from DO
-  domain = digitalocean.Domain(token=TOKEN, name="DOMAIN")
+  domain = digitalocean.Domain(token=TOKEN, name="example.com")
 
   # Subdomains list
   subdomains = ['@', 'subdomain1', 'subdomain2']
