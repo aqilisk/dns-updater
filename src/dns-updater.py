@@ -25,42 +25,37 @@ def get_current_ip():
   except Exception as e:
     logger.error("ERROR RETRIEVING IP: %s". str(e))
 
-def update_dns_records(domain, subdomains, current_ip):
+def update_dns_records(domain, hostname, current_ip):
   # Update DNS records for the given domain and subdomains
   try:
     records = domain.get_records()
-    for record in records:
-      # Only update A records
-      if record.type == 'A':
-        # Check record is in subdomains list
-        if record.name in subdomains:
-          if record.data != current_ip:
-            record.data = current_ip
-            record.save()
-            logger.info("IP changed to %s for %s", current_ip, record.name)
-          else:
-            logger.info("IP not changed for %s", record.name)
   except Exception as e:
-    logger.error("DNS UPDATE ERROR: %s". str(e))
+    logger.error("ERROR RETRIEVING RECORDS: {}".format(str(e)))
 
-
-def main():
-  # DigitalOcean TOKEN
-  TOKEN = "DigitalOcean Token"
-
-  # Get domain from DO
-  domain = digitalocean.Domain(token=TOKEN, name="example.com")
-
-  # Subdomains list
-  subdomains = ['@', 'subdomain1', 'subdomain2']
-
-  # Get current IP
-  current_ip = get_current_ip()
-
-  # Changing to current IP
-  update_dns_records(domain, subdomains, current_ip)
-
-  quit()
+  for record in records:
+    # Only update A records
+    if record.type == 'A' and record.name == hostname:
+      if record.data != current_ip:
+        previousData = record.data
+        try:
+          record.data = current_ip
+          record.save()
+          logger.info("IP changed from {} to {}".format(previousData, current_ip))
+        except Exception as e:
+          logger.error("ERROR CHANGING IP: {}".format(str(e)))
+      else:
+        logger.info("IP not changed")
+      break
 
 if __name__ == "__main__":
-  main()
+  # DigitalOcean TOKEN
+  TOKEN = "DigitalOcean Token"
+  # Get domain from DO
+  domain = digitalocean.Domain(token=TOKEN, name="example.com")
+  # Hostname to change IP
+  hostname = "@"
+  # Get current IP
+  current_ip = get_current_ip()
+  # Update DNS records
+  update_dns_records(domain, hostname, current_ip)
+  quit()
